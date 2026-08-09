@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compliance Ops — CAPA Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#0F1318;
+    --panel:#171D24;
+    --panel-2:#1D242C;
+    --border:#262E38;
+    --text:#E7EAEE;
+    --text-dim:#8A94A3;
+    --text-faint:#5B6472;
+    --amber:#E3A73B;
+    --red:#D8583F;
+    --green:#4FA97C;
+    --blue:#4A8FD1;
+    --slate:#5B6472;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;}
+  #root{min-height:100vh;padding-bottom:60px;}
+
+  ::selection{background:var(--amber);color:#12161C;}
+
+  /* ---------- HEADER ---------- */
+  header.ops-header{
+    display:flex;align-items:center;gap:20px;
+    padding:16px 24px;border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, #141A20 0%, #10151A 100%);
+    position:sticky;top:0;z-index:20;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:38px;height:38px;border:2px solid var(--amber);border-radius:4px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:15px;color:var(--amber);
+    letter-spacing:0.5px;
+  }
+  .brand-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:16px;letter-spacing:2px;text-transform:uppercase;}
+  .brand-sub{font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+
+  .stats-strip{display:flex;gap:0;margin-left:auto;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+  .stat-cell{padding:8px 18px;border-right:1px solid var(--border);text-align:center;min-width:88px;}
+  .stat-cell:last-child{border-right:none;}
+  .stat-num{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;line-height:1;}
+  .stat-label{font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+  .stat-cell.red .stat-num{color:var(--red);}
+  .stat-cell.amber .stat-num{color:var(--amber);}
+  .stat-cell.green .stat-num{color:var(--green);}
+
+  .btn-primary{
+    background:var(--amber);color:#181109;border:none;border-radius:5px;
+    padding:10px 16px;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:13px;
+    cursor:pointer;white-space:nowrap;
+  }
+  .btn-primary:hover{background:#f0b654;}
+  .btn-ghost{
+    background:transparent;color:var(--text-dim);border:1px solid var(--border);border-radius:5px;
+    padding:9px 14px;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;
+  }
+  .btn-ghost:hover{color:var(--text);border-color:var(--text-faint);}
+
+  /* ---------- MAIN ---------- */
+  main{max-width:1080px;margin:0 auto;padding:24px;}
+  .toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .toolbar input, .toolbar select{
+    background:var(--panel);border:1px solid var(--border);color:var(--text);
+    border-radius:5px;padding:9px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;
+  }
+  .toolbar input{flex:1;min-width:200px;}
+  .toolbar input:focus, .toolbar select:focus{outline:1px solid var(--amber);}
+
+  .section-label{
+    font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--text-faint);margin:22px 0 10px;
+  }
+
+  /* ---------- FLIGHT STRIP LIST ---------- */
+  .strips{display:flex;flex-direction:column;gap:6px;}
+  .strip{
+    display:flex;align-items:stretch;background:var(--panel);border:1px solid var(--border);
+    border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .12s, transform .12s;
+  }
+  .strip:hover{border-color:var(--text-faint);transform:translateX(2px);}
+  .strip-tab{width:6px;flex-shrink:0;}
+  .strip-tab.sev-critical{background:var(--red);}
+  .strip-tab.sev-major{background:var(--amber);}
+  .strip-tab.sev-minor{background:var(--slate);}
+
+  .strip-body{display:flex;align-items:center;gap:16px;padding:12px 16px;flex:1;min-width:0;}
+  .strip-id{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);width:118px;flex-shrink:0;}
+  .strip-main{flex:1;min-width:0;}
+  .strip-title{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .strip-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .strip-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
+  .strip-days{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);text-align:right;min-width:64px;}
+  .strip-days.overdue{color:var(--red);}
+
+  .pill{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;
+    padding:4px 9px;border-radius:20px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;
+  }
+  .pill .dot{width:6px;height:6px;border-radius:50%;}
+  .pill.status-open{background:rgba(216,88,63,0.14);color:var(--red);}
+  .pill.status-open .dot{background:var(--red);box-shadow:0 0 6px var(--red);}
+  .pill.status-in_progress{background:rgba(227,167,59,0.14);color:var(--amber);}
+  .pill.status-in_progress .dot{background:var(--amber);}
+  .pill.status-closed{background:rgba(74,143,209,0.14);color:var(--blue);}
+  .pill.status-closed .dot{background:var(--blue);}
+  .pill.status-verified{background:rgba(79,169,124,0.14);color:var(--green);}
+  .pill.status-verified .dot{background:var(--green);}
+
+  .empty-state{
+    border:1px dashed var(--border);border-radius:8px;padding:48px 24px;text-align:center;color:var(--text-dim);
+  }
+  .empty-state h3{font-family:'Oswald',sans-serif;color:var(--text);font-weight:500;margin-bottom:6px;}
+  .empty-state p{font-size:13px;margin-bottom:18px;}
+
+  /* ---------- MODAL / OVERLAY ---------- */
+  .modal-overlay, .detail-overlay{
+    position:fixed;inset:0;background:rgba(8,10,13,0.72);display:flex;align-items:flex-start;justify-content:center;
+    z-index:100;padding:40px 20px;overflow-y:auto;
+  }
+  .modal, .detail-panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:8px;width:100%;max-width:640px;
+    padding:0;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-head, .detail-head{
+    display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;background:var(--panel);border-radius:8px 8px 0 0;
+  }
+  .modal-head h2, .detail-head h2{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;letter-spacing:0.5px;margin:0;}
+  .close-btn{background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer;padding:4px 8px;}
+  .close-btn:hover{color:var(--text);}
+  .modal-body, .detail-body{padding:22px;}
+
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:5px;padding:10px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;
+  }
+  .field textarea{min-height:70px;resize:vertical;font-family:'IBM Plex Sans',sans-serif;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:1px solid var(--amber);}
+  .field-row{display:flex;gap:12px;}
+  .field-row .field{flex:1;}
+
+  .form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+
+  /* ---------- DETAIL PANEL ---------- */
+  .detail-overlay{align-items:flex-start;}
+  .detail-panel{max-width:720px;}
+  .detail-meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .kv{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);background:var(--panel-2);
+      border:1px solid var(--border);border-radius:4px;padding:5px 10px;}
+  .kv b{color:var(--text);font-weight:500;}
+  .detail-desc{font-size:13px;line-height:1.6;color:var(--text);background:var(--panel-2);border:1px solid var(--border);
+      border-radius:6px;padding:14px;margin-bottom:18px;}
+
+  .ai-box{border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:18px;background:var(--panel-2);}
+  .ai-box-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .ai-box-head .label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--amber);}
+  .ai-status{font-size:11px;color:var(--text-faint);font-family:'IBM Plex Mono',monospace;}
+
+  .action-item{
+    display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--border);
+    border-radius:6px;margin-bottom:8px;background:var(--panel-2);
+  }
+  .action-item .ai-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);padding-top:2px;}
+  .action-item-body{flex:1;}
+  .action-item textarea{width:100%;min-height:44px;}
+  .action-item-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center;}
+  .action-item-meta input, .action-item-meta select{
+    background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:4px;
+    padding:6px 8px;font-size:11px;font-family:'IBM Plex Mono',monospace;
+  }
+  .remove-action{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;padding:2px 6px;}
+  .remove-action:hover{color:var(--red);}
+
+  .link-btn{background:none;border:none;color:var(--amber);cursor:pointer;font-size:12px;padding:0;text-decoration:underline;}
+  .spinner{
+    width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;
+    display:inline-block;animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);
+    padding:10px 18px;border-radius:6px;font-size:12px;color:var(--text);z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+(function(){
+  const state = { findings: [], loaded:false, filter:{status:'all', severity:'all', q:''} };
+  const YEAR = new Date().getFullYear();
+  const ROOT_CAUSE_CATEGORIES = ['Human Factors','Procedural / SOP Gap','Training Deficiency','Equipment / Tooling','Documentation','Oversight / Supervision','Communication','Other'];
+  const SOURCES = ['Internal Audit','Regulatory Inspection','Incident Investigation','Self-Report','Third-Party Review'];
+
+  function uid(){ return Math.random().toString(36).slice(2,10); }
+  function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function todayISO(){ return new Date().toISOString().slice(0,10); }
+  function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+
+  function nextFindingId(){
+    const n = state.findings.length + 1;
+    return 'CI-' + YEAR + '-' + String(n).padStart(4,'0');
+  }
+
+  function computeStatus(f){
+    if(!f.actions.length) return 'open';
+    if(f.actions.every(a=>a.status==='verified')) return 'verified';
+    if(f.actions.every(a=>a.status==='closed'||a.status==='verified')) return 'closed';
+    if(f.actions.some(a=>a.status==='in_progress'||a.status==='closed'||a.status==='verified')) return 'in_progress';
+    return 'open';
+  }
+  function isOverdue(f){
+    const today = todayISO();
+    return f.actions.some(a=> a.dueDate && a.dueDate < today && a.status!=='closed' && a.status!=='verified');
+  }
+
+  async function loadState(){
+    try{
+      const res = await window.storage.get('findings');
+      state.findings = res ? JSON.parse(res.value) : [];
+    }catch(e){ state.findings = []; }
+    state.loaded = true;
+    render();
+  }
+  async function saveState(){
+    try{ await window.storage.set('findings', JSON.stringify(state.findings)); }
+    catch(e){ showToast('Storage error — changes may not persist'); }
+  }
+
+  function showToast(msg){
+    const t = document.createElement('div');
+    t.className='toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 2600);
+  }
+
+  // ---------------- SAMPLE DATA ----------------
+  function seedSample(){
+    const mk = (title, citation, severity, source, description, daysAgo, actions) => ({
+      id: nextIdLocal(), title, citation, severity, source, description,
+      dateIdentified: new Date(Date.now()-daysAgo*86400000).toISOString().slice(0,10),
+      rootCauseCategory:'', rootCauseAnalysis:'', actions: actions.map(a=>({id:uid(), ...a}))
+    });
+    let counter = 1;
+    function nextIdLocal(){ return 'CI-'+YEAR+'-'+String(counter++).padStart(4,'0'); }
+
+    state.findings = [
+      mk('Late NHTSA SGO filing following minor contact event','49 CFR 571 — Standing General Order on Crash Reporting','critical','Self-Report',
+        'A low-speed contact event involving an AV and a cyclist was not filed to NHTSA within the required reporting window. Root cause traced to unclear internal ownership between the incident triage team and the regulatory reporting team.', 9,
+        [
+          {description:'File corrective SGO report and notify legal/regulatory affairs', owner:'Regulatory Affairs Manager', dueDate: addDays(-5), status:'verified', notes:'Filed within amended window; no further NHTSA action.'},
+          {description:'Define single-owner handoff from incident triage to SGO filing with SLA clock', owner:'Technical Training Manager', dueDate: addDays(7), status:'in_progress', notes:''},
+          {description:'Build automated countdown alert tied to incident severity classification', owner:'Ops Engineering', dueDate: addDays(21), status:'open', notes:''}
+        ]),
+      mk('Remote Assistance operator exceeded scope during rider disturbance','Internal RA Operating Procedure 2.3 / CA DMV Deployment Permit Condition 6','major','Incident Investigation',
+        'During a rider disturbance, a Remote Assistance operator issued a route deviation instruction outside their authorized scope, bypassing the escalation-to-safety-lead requirement.', 16,
+        [
+          {description:'Retrain all active RA operators on scope-of-authority boundaries with sign-off', owner:'Technical Training Manager', dueDate: addDays(-2), status:'closed', notes:'100% completion across RA roster.'},
+          {description:'Add hard system gate preventing route-deviation commands without safety-lead co-sign', owner:'Ops Engineering', dueDate: addDays(12), status:'open', notes:''}
+        ]),
+      mk('ODD boundary drift not flagged during weather transition','Internal Safety Case Sec. 5 — Operational Design Domain Limits','major','Internal Audit',
+        'Post-trip review found three trips continued in degraded visibility conditions approaching the documented ODD weather threshold before a planned pared-back response engaged, with no operator alert generated.', 12,
+        [
+          {description:'Lower automated alert threshold for degraded-visibility ODD boundary', owner:'Ops Safety Lead', dueDate: addDays(6), status:'in_progress', notes:''},
+          {description:'Add manual spot-check to daily ops review for borderline-ODD trips', owner:'Training Production Supervisor', dueDate: addDays(3), status:'open', notes:''},
+          {description:'Update rider-support training module on weather-related service pauses', owner:'Technical Training Manager', dueDate: addDays(18), status:'open', notes:''}
+        ]),
+      mk('Roadside Assistance response time breach on freeway shoulder stop','Internal RS Ops SLA 1.1 / CA DMV Permit — Roadside Response','minor','Self-Report',
+        'A freeway shoulder stop exceeded the target Roadside Assistance dispatch-to-arrival window by 14 minutes due to unclear dispatch prioritization during a multi-incident window.', 30,
+        [
+          {description:'Introduce freeway-stop priority tier in dispatch triage logic', owner:'Ops Safety Lead', dueDate: addDays(-10), status:'verified', notes:'Verified against next 20 freeway-stop events — all within SLA.'}
+        ])
+    ];
+    function addDays(n){ return new Date(Date.now()+n*86400000).toISOString().slice(0,10); }
+    saveState().then(render);
+  }
+
+  // ---------------- AI DRAFT ----------------
+  async function draftWithAI(finding, targetEl){
+    targetEl.innerHTML = '<span class="spinner"></span> <span class="ai-status">Generating simulated AI draft…</span>';
+
+    // PUBLIC PORTFOLIO MODE
+    // This prototype intentionally makes NO external AI/API calls.
+    // The response below is generated locally from simple rules to demonstrate
+    // the intended workflow of an LLM-assisted CAPA drafting feature.
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    const desc = (finding.description || "").toLowerCase();
+    const title = (finding.title || "").toLowerCase();
+    const combined = title + " " + desc;
+
+    let rootCauseCategory = "Procedural / SOP Gap";
+    if(combined.includes("training") || combined.includes("operator") || combined.includes("scope")) {
+      rootCauseCategory = "Training Deficiency";
+    } else if(combined.includes("latency") || combined.includes("system") || combined.includes("software") || combined.includes("alert")) {
+      rootCauseCategory = "Equipment / Tooling";
+    } else if(combined.includes("handoff") || combined.includes("ownership") || combined.includes("communication")) {
+      rootCauseCategory = "Communication";
+    } else if(combined.includes("documentation") || combined.includes("citation") || combined.includes("report")) {
+      rootCauseCategory = "Documentation";
+    }
+
+    const shortTitle = finding.title || "the identified finding";
+
+    return {
+      rootCauseCategory,
+      rootCauseAnalysis:
+        `The apparent root cause of ${shortTitle.toLowerCase()} is a gap between the intended process and how the work was executed or controlled. ` +
+        `This simulated draft is intended to demonstrate how an LLM-assisted workflow could help an analyst structure an initial hypothesis for human review, not produce an authoritative safety determination.`,
+      correctiveActions: [
+        {
+          description: "Define a clear owner and handoff point for the affected process.",
+          suggestedOwner: "Operations / Compliance Lead",
+          suggestedDays: 7
+        },
+        {
+          description: "Review the applicable procedure, training, and system controls for gaps or ambiguity.",
+          suggestedOwner: "Training / Process Owner",
+          suggestedDays: 14
+        },
+        {
+          description: "Implement a preventive control or alert where practical and document the change.",
+          suggestedOwner: "Operations Engineering",
+          suggestedDays: 21
+        },
+        {
+          description: "Verify effectiveness through follow-up sampling, audit, or operational review.",
+          suggestedOwner: "Safety / Quality Lead",
+          suggestedDays: 30
+        }
+      ]
+    };
+  }
+
+  // ---------------- RENDER: STATS ----------------
+  function renderStats(){
+    const total = state.findings.length;
+    const open = state.findings.filter(f=>computeStatus(f)!=='verified'&&computeStatus(f)!=='closed').length;
+    const overdue = state.findings.filter(isOverdue).length;
+    const closedOrVerified = state.findings.filter(f=>['closed','verified'].includes(computeStatus(f)));
+    let closureRate = total ? Math.round((closedOrVerified.length/total)*100) : 0;
+
+    return `
+      <div class="stat-cell${open?' red':''}">
+        <div class="stat-num">${open}</div><div class="stat-label">Open</div>
+      </div>
+      <div class="stat-cell${overdue?' red':''}">
+        <div class="stat-num">${overdue}</div><div class="stat-label">Overdue</div>
+      </div>
+      <div class="stat-cell${closureRate>=70?' green':' amber'}">
+        <div class="stat-num">${closureRate}%</div><div class="stat-label">Closure Rate</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">${total}</div><div class="stat-label">Total Findings</div>
+      </div>
+    `;
+  }
+
+  // ---------------- RENDER: LIST ----------------
+  function filteredFindings(){
+    return state.findings.filter(f=>{
+      const st = computeStatus(f);
+      if(state.filter.status!=='all' && st!==state.filter.status) return false;
+      if(state.filter.severity!=='all' && f.severity!==state.filter.severity) return false;
+      if(state.filter.q){
+        const q = state.filter.q.toLowerCase();
+        const hay = (f.id+' '+f.title+' '+f.citation+' '+f.description).toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    }).sort((a,b)=> (isOverdue(b)-isOverdue(a)) || (b.dateIdentified.localeCompare(a.dateIdentified)));
+  }
+
+  function renderList(){
+    const list = filteredFindings();
+    if(!state.findings.length){
+      return `<div class="empty-state" id="emptyState">
+        <h3>No findings logged yet</h3>
+        <p>Log a regulatory or internal finding to start tracking its corrective action plan — or load sample data to see how it works.</p>
+        <button class="btn-ghost" id="seedBtn">Load sample findings</button>
+      </div>`;
+    }
+    if(!list.length){
+      return `<div class="empty-state"><h3>No matches</h3><p>Try adjusting your filters or search.</p></div>`;
+    }
+    return `<div class="strips">${list.map(f=>{
+      const st = computeStatus(f);
+      const overdue = isOverdue(f);
+      const days = daysBetween(f.dateIdentified, todayISO());
+      return `
+      <div class="strip" data-id="${f.id}">
+        <div class="strip-tab sev-${f.severity}"></div>
+        <div class="strip-body">
+          <div class="strip-id">${f.id}</div>
+          <div class="strip-main">
+            <div class="strip-title">${esc(f.title)}</div>
+            <div class="strip-meta">${esc(f.citation||'—')} · ${esc(f.source)}</div>
+          </div>
+          <div class="strip-right">
+            <div class="strip-days${overdue?' overdue':''}">${overdue?'OVERDUE':days+'d open'}</div>
+            <span class="pill status-${st}"><span class="dot"></span>${st.replace('_',' ')}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  // ---------------- MAIN RENDER ----------------
+  function render(){
+    const root = document.getElementById('root');
+    root.innerHTML = `
+      <header class="ops-header">
+        <div class="brand">
+          <div class="brand-mark">CX</div>
+          <div>
+            <div class="brand-title">Compliance Ops</div>
+            <div class="brand-sub">Corrective Action Tracker</div>
+            <div style="font-size:10px;color:var(--text-faint);margin-top:4px;max-width:420px;">
+              Public portfolio prototype — AI-assisted drafting is simulated locally. No external AI service or API is connected.
+            </div>
+          </div>
+        </div>
+        <div class="stats-strip">${renderStats()}</div>
+        <button class="btn-primary" id="newFindingBtn">+ New Finding</button>
+      </header>
+      <main>
+        <div class="toolbar">
+          <input id="searchInput" placeholder="Search by ID, title, or citation…" value="${esc(state.filter.q)}">
+          <select id="filterStatus">
+            <option value="all">All statuses</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In progress</option>
+            <option value="closed">Closed</option>
+            <option value="verified">Verified effective</option>
+          </select>
+          <select id="filterSeverity">
+            <option value="all">All severities</option>
+            <option value="critical">Critical</option>
+            <option value="major">Major</option>
+            <option value="minor">Minor</option>
+          </select>
+        </div>
+        <div class="section-label">Findings Log</div>
+        <div id="listWrap">${renderList()}</div>
+      </main>
+    `;
+    // restore filter values
+    document.getElementById('filterStatus').value = state.filter.status;
+    document.getElementById('filterSeverity').value = state.filter.severity;
+
+    document.getElementById('newFindingBtn').onclick = openNewFindingModal;
+    document.getElementById('searchInput').oninput = (e)=>{ state.filter.q = e.target.value; document.getElementById('listWrap').innerHTML = renderList(); bindListClicks(); bindSeedBtn(); };
+    document.getElementById('filterStatus').onchange = (e)=>{ state.filter.status = e.target.value; document.getElementById('listWrap').innerHTML = renderList(); bindListClicks(); bindSeedBtn(); };
+    document.getElementById('filterSeverity').onchange = (e)=>{ state.filter.severity = e.target.value; document.getElementById('listWrap').innerHTML = renderList(); bindListClicks(); bindSeedBtn(); };
+    bindListClicks();
+    bindSeedBtn();
+  }
+  function bindListClicks(){
+    document.querySelectorAll('.strip').forEach(el=>{
+      el.onclick = ()=> openDetail(el.getAttribute('data-id'));
+    });
+  }
+  function bindSeedBtn(){
+    const b = document.getElementById('seedBtn');
+    if(b) b.onclick = seedSample;
+  }
+
+  // ---------------- NEW FINDING MODAL ----------------
+  function openNewFindingModal(){
+    const overlay = document.createElement('div');
+    overlay.className='modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal">
+        <div class="modal-head"><h2>Log New Finding</h2><button class="close-btn" id="closeModal">✕</button></div>
+        <div class="modal-body">
+          <div class="field-row">
+            <div class="field"><label>Finding ID</label><input value="${nextFindingId()}" disabled></div>
+            <div class="field"><label>Date identified</label><input type="date" id="f_date" value="${todayISO()}"></div>
+          </div>
+          <div class="field"><label>Title</label><input id="f_title" placeholder="Short description of the finding"></div>
+          <div class="field-row">
+            <div class="field"><label>Regulatory / policy citation</label><input id="f_citation" placeholder="e.g. 49 CFR 571 SGO, CA DMV Permit Cond. 6, internal RA SOP 2.3"></div>
+            <div class="field"><label>Severity</label>
+              <select id="f_severity"><option value="minor">Minor</option><option value="major" selected>Major</option><option value="critical">Critical</option></select>
+            </div>
+          </div>
+          <div class="field"><label>Source</label>
+            <select id="f_source">${SOURCES.map(s=>`<option>${s}</option>`).join('')}</select>
+          </div>
+          <div class="field"><label>Description</label><textarea id="f_description" placeholder="What happened, where, and how it was discovered"></textarea></div>
+          <div class="form-actions">
+            <button class="btn-ghost" id="cancelModal">Cancel</button>
+            <button class="btn-primary" id="saveModal">Save Finding</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const close = ()=> overlay.remove();
+    overlay.onclick = (e)=>{ if(e.target===overlay) close(); };
+    overlay.querySelector('#closeModal').onclick = close;
+    overlay.querySelector('#cancelModal').onclick = close;
+    overlay.querySelector('#saveModal').onclick = async ()=>{
+      const title = overlay.querySelector('#f_title').value.trim();
+      if(!title){ showToast('Title is required'); return; }
+      const finding = {
+        id: nextFindingId(),
+        title,
+        citation: overlay.querySelector('#f_citation').value.trim(),
+        severity: overlay.querySelector('#f_severity').value,
+        source: overlay.querySelector('#f_source').value,
+        description: overlay.querySelector('#f_description').value.trim(),
+        dateIdentified: overlay.querySelector('#f_date').value || todayISO(),
+        rootCauseCategory:'', rootCauseAnalysis:'', actions: []
+      };
+      state.findings.unshift(finding);
+      await saveState();
+      close();
+      render();
+      openDetail(finding.id);
+    };
+  }
+
+  // ---------------- DETAIL PANEL ----------------
+  function openDetail(id){
+    const finding = state.findings.find(f=>f.id===id);
+    if(!finding) return;
+    const overlay = document.createElement('div');
+    overlay.className='detail-overlay';
+
+    function paint(){
+      const st = computeStatus(finding);
+      overlay.innerHTML = `
+        <div class="detail-panel">
+          <div class="detail-head">
+            <h2>${finding.id} <span class="pill status-${st}" style="margin-left:10px;"><span class="dot"></span>${st.replace('_',' ')}</span></h2>
+            <button class="close-btn" id="closeDetail">✕</button>
+          </div>
+          <div class="detail-body">
+            <h3 style="margin:0 0 10px;font-weight:500;">${esc(finding.title)}</h3>
+            <div class="detail-meta-row">
+              <div class="kv">Citation: <b>${esc(finding.citation||'—')}</b></div>
+              <div class="kv">Severity: <b>${finding.severity}</b></div>
+              <div class="kv">Source: <b>${esc(finding.source)}</b></div>
+              <div class="kv">Identified: <b>${finding.dateIdentified}</b></div>
+            </div>
+            <div class="detail-desc">${esc(finding.description)||'<em>No description provided.</em>'}</div>
+
+            <div class="ai-box">
+              <div class="ai-box-head">
+                <span class="label">Root Cause &amp; Corrective Action Plan</span>
+                <button class="link-btn" id="aiDraftBtn">Generate simulated AI draft →</button>
+              </div>
+              <div id="aiStatus"></div>
+              <div class="field">
+                <label>Root cause category</label>
+                <select id="rc_category">
+                  <option value="">— Select —</option>
+                  ${ROOT_CAUSE_CATEGORIES.map(c=>`<option ${finding.rootCauseCategory===c?'selected':''}>${c}</option>`).join('')}
+                </select>
+              </div>
+              <div class="field">
+                <label>Root cause analysis</label>
+                <textarea id="rc_analysis" placeholder="What actually caused this, not just what happened">${esc(finding.rootCauseAnalysis||'')}</textarea>
+              </div>
+              <button class="btn-ghost" id="saveRC">Save Root Cause</button>
+            </div>
+
+            <div class="section-label" style="margin-top:4px;">Corrective Actions (${finding.actions.length})</div>
+            <div id="actionsList">${renderActions(finding)}</div>
+            <button class="btn-ghost" id="addActionBtn">+ Add action item</button>
+          </div>
+        </div>
+      `;
+      overlay.querySelector('#closeDetail').onclick = ()=>{ overlay.remove(); render(); };
+      overlay.querySelector('#saveRC').onclick = async ()=>{
+        finding.rootCauseCategory = overlay.querySelector('#rc_category').value;
+        finding.rootCauseAnalysis = overlay.querySelector('#rc_analysis').value;
+        await saveState();
+        showToast('Root cause saved');
+      };
+      overlay.querySelector('#addActionBtn').onclick = async ()=>{
+        finding.actions.push({id:uid(), description:'', owner:'', dueDate:'', status:'open', notes:''});
+        await saveState();
+        paint();
+      };
+      overlay.querySelector('#aiDraftBtn').onclick = async ()=>{
+        const statusEl = overlay.querySelector('#aiStatus');
+        const result = await draftWithAI(finding, statusEl);
+        statusEl.innerHTML = '';
+        if(!result) return;
+        if(result.rootCauseCategory) overlay.querySelector('#rc_category').value = ROOT_CAUSE_CATEGORIES.includes(result.rootCauseCategory) ? result.rootCauseCategory : '';
+        if(result.rootCauseAnalysis) overlay.querySelector('#rc_analysis').value = result.rootCauseAnalysis;
+        if(Array.isArray(result.correctiveActions)){
+          result.correctiveActions.forEach(a=>{
+            const due = new Date(Date.now() + (a.suggestedDays||14)*86400000).toISOString().slice(0,10);
+            finding.actions.push({id:uid(), description:a.description||'', owner:a.suggestedOwner||'', dueDate:due, status:'open', notes:''});
+          });
+        }
+        await saveState();
+        paint();
+        showToast('Simulated AI draft inserted — review and adjust before saving');
+      };
+      bindActionRows();
+    }
+
+    function renderActions(finding){
+      if(!finding.actions.length) return `<div style="color:var(--text-faint);font-size:12px;margin-bottom:10px;">No action items yet.</div>`;
+      return finding.actions.map((a,i)=>`
+        <div class="action-item" data-aid="${a.id}">
+          <div class="ai-num">${String(i+1).padStart(2,'0')}</div>
+          <div class="action-item-body">
+            <textarea class="a_desc" placeholder="Corrective action description">${esc(a.description)}</textarea>
+            <div class="action-item-meta">
+              <input class="a_owner" placeholder="Owner / role" value="${esc(a.owner)}">
+              <input class="a_due" type="date" value="${a.dueDate||''}">
+              <select class="a_status">
+                <option value="open" ${a.status==='open'?'selected':''}>Open</option>
+                <option value="in_progress" ${a.status==='in_progress'?'selected':''}>In progress</option>
+                <option value="closed" ${a.status==='closed'?'selected':''}>Closed</option>
+                <option value="verified" ${a.status==='verified'?'selected':''}>Verified effective</option>
+              </select>
+              <button class="remove-action" title="Remove">🗑</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function bindActionRows(){
+      overlay.querySelectorAll('.action-item').forEach(row=>{
+        const aid = row.getAttribute('data-aid');
+        const action = finding.actions.find(a=>a.id===aid);
+        const commit = async ()=>{
+          action.description = row.querySelector('.a_desc').value;
+          action.owner = row.querySelector('.a_owner').value;
+          action.dueDate = row.querySelector('.a_due').value;
+          action.status = row.querySelector('.a_status').value;
+          await saveState();
+        };
+        row.querySelector('.a_desc').onblur = commit;
+        row.querySelector('.a_owner').onblur = commit;
+        row.querySelector('.a_due').onchange = commit;
+        row.querySelector('.a_status').onchange = async ()=>{ await commit(); paint(); };
+        row.querySelector('.remove-action').onclick = async ()=>{
+          finding.actions = finding.actions.filter(a=>a.id!==aid);
+          await saveState();
+          paint();
+        };
+      });
+    }
+
+    overlay.onclick = (e)=>{ if(e.target===overlay){ overlay.remove(); render(); } };
+    document.body.appendChild(overlay);
+    paint();
+  }
+
+  loadState();
+})();
+</script>
+</body>
+</html>
