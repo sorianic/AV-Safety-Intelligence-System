@@ -6,6 +6,10 @@
 
 ## Concept Overview
 
+<p align="center">
+  <img src="./sir-concept-overview.png" alt="AV Safety Intelligence System Concept Overview" width="100%">
+</p>
+
 AV safety organizations can generate information across many different systems and processes:
 
 - Incident records
