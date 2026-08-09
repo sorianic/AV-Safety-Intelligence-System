@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safety Intelligence Registry</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg-0:#0E1113;
+    --bg-1:#151A1D;
+    --bg-2:#1C2226;
+    --bg-3:#242C31;
+    --line:#2C363C;
+    --line-soft:#212A2F;
+    --text-hi:#EDEFEF;
+    --text-mid:#A9B4B8;
+    --text-lo:#6C7A80;
+    --steel:#5B9BD1;
+    --steel-dim:#345E7C;
+    --amber:#E0A458;
+    --amber-dim:#7A5A2C;
+    --teal:#4FB8A6;
+    --coral:#DB7A5D;
+    --mono:'IBM Plex Mono', monospace;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg-0);
+    color:var(--text-hi);
+    font-family:var(--sans);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    border-bottom:1px solid var(--line);
+    padding:22px 28px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    background:linear-gradient(180deg, var(--bg-1), var(--bg-0));
+  }
+  .brand{display:flex; align-items:baseline; gap:12px;}
+  .brand-mark{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    color:var(--bg-0);
+    background:var(--steel);
+    padding:3px 7px;
+    border-radius:3px;
+    font-weight:600;
+  }
+  h1{font-size:19px; font-weight:600; letter-spacing:-0.01em;}
+  .subhead{font-size:12.5px; color:var(--text-lo); font-family:var(--mono);}
+  .status-strip{display:flex; gap:18px; font-family:var(--mono); font-size:11.5px; color:var(--text-mid);}
+  .status-strip b{color:var(--text-hi); font-weight:600;}
+  .dot{display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:5px; background:var(--teal);}
+
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:290px 1fr 320px;
+    gap:0;
+    min-height:calc(100vh - 76px);
+  }
+  @media (max-width: 980px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  /* ---------- queue (left) ---------- */
+  .queue{
+    border-right:1px solid var(--line);
+    background:var(--bg-1);
+    padding:18px 0;
+    overflow-y:auto;
+  }
+  .queue-label{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-lo); padding:0 18px 10px;
+  }
+  .item{
+    padding:13px 18px;
+    border-left:2px solid transparent;
+    cursor:pointer;
+    transition:background 0.12s, border-color 0.12s;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .item:hover{background:var(--bg-2);}
+  .item.active{background:var(--bg-2); border-left-color:var(--steel);}
+  .item-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;}
+  .item-id{font-family:var(--mono); font-size:10.5px; color:var(--text-lo);}
+  .sev{
+    font-family:var(--mono); font-size:9.5px; padding:2px 6px; border-radius:3px; letter-spacing:0.05em; font-weight:600;
+  }
+  .sev-high{background:rgba(219,122,93,0.15); color:var(--coral);}
+  .sev-med{background:rgba(224,164,88,0.15); color:var(--amber);}
+  .sev-low{background:rgba(79,184,166,0.15); color:var(--teal);}
+  .item-title{font-size:13.5px; font-weight:500; color:var(--text-hi); line-height:1.4;}
+  .item-meta{font-size:11.5px; color:var(--text-lo); margin-top:4px;}
+
+  /* ---------- graph (center) ---------- */
+  .graph-panel{
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+  }
+  .panel-head{margin-bottom:6px;}
+  .panel-eyebrow{font-family:var(--mono); font-size:10.5px; color:var(--text-lo); letter-spacing:0.1em; text-transform:uppercase;}
+  .panel-title{font-size:18px; font-weight:600; margin-top:4px;}
+  .panel-desc{font-size:13px; color:var(--text-mid); margin-top:6px; line-height:1.6; max-width:640px;}
+
+  .graph-canvas{
+    margin-top:18px;
+    background:var(--bg-1);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px;
+    flex:1;
+    min-height:380px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  svg{width:100%; height:100%;}
+  .node-circle{fill:var(--bg-3); stroke:var(--line); stroke-width:1;}
+  .node-circle.center{fill:var(--bg-3); stroke:var(--steel); stroke-width:1.5;}
+  .link-line{stroke:var(--line); stroke-width:1; fill:none;}
+  .node-label{font-family:var(--sans); font-size:11.5px; fill:var(--text-hi); font-weight:500;}
+  .node-sub{font-family:var(--mono); font-size:9.5px; fill:var(--text-lo);}
+  .node-group{cursor:pointer;}
+  .node-group:hover .node-circle{stroke:var(--steel); stroke-width:1.5;}
+
+  /* ---------- detail (right) ---------- */
+  .detail{
+    border-left:1px solid var(--line);
+    background:var(--bg-1);
+    padding:20px;
+    overflow-y:auto;
+  }
+  .detail-empty{color:var(--text-lo); font-size:13px; padding-top:30px; text-align:center; line-height:1.6;}
+  .detail-eyebrow{font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:6px;}
+  .detail-title{font-size:15px; font-weight:600; margin-bottom:10px; line-height:1.4;}
+  .detail-row{display:flex; justify-content:space-between; font-size:12px; padding:7px 0; border-bottom:1px solid var(--line-soft);}
+  .detail-row span:first-child{color:var(--text-lo);}
+  .detail-row span:last-child{color:var(--text-hi); font-family:var(--mono); text-align:right;}
+  .detail-body{font-size:12.5px; color:var(--text-mid); line-height:1.65; margin-top:12px;}
+  .tag-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:12px;}
+  .tag{font-family:var(--mono); font-size:10px; padding:3px 7px; border-radius:3px; background:var(--bg-3); color:var(--text-mid); border:1px solid var(--line);}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-mark">SIR</span>
+    <div>
+      <h1>Safety Intelligence Registry</h1>
+      <div class="subhead">Linked knowledge graph — incidents · ODD/HARA · regulatory filings · research</div>
+    </div>
+  </div>
+  <div class="status-strip">
+    <span><span class="dot"></span><b>6</b>&nbsp;active links</span>
+    <span><b>3</b>&nbsp;open CAPAs</span>
+    <span><b>1</b>&nbsp;SGO filing pending</span>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="queue" id="queue">
+    <div class="queue-label">Incident queue</div>
+  </div>
+
+  <div class="graph-panel">
+    <div class="panel-head">
+      <div class="panel-eyebrow">Selected record</div>
+      <div class="panel-title" id="graphTitle">Select an incident from the queue</div>
+      <div class="panel-desc" id="graphDesc">Each incident links out to the safety-case entry it violates, the regulatory filing it triggered, prior corrective actions on the same failure mode, and relevant published research — so root cause work starts from context, not a blank page.</div>
+    </div>
+    <div class="graph-canvas">
+      <svg id="graphSvg" viewBox="0 0 640 420"></svg>
+    </div>
+  </div>
+
+  <div class="detail" id="detail">
+    <div class="detail-empty">Click a node in the graph to inspect that linked record.</div>
+  </div>
+</div>
+
+<script>
+const data = {
+  incidents: [
+    {
+      id:"INC-2291", title:"Unplanned stop, dense fog, SR-152 corridor",
+      severity:"high", date:"2026-06-03", odd:"ODD-14", hara:"HARA-07 / ASIL C",
+      sgo:"SGO-2026-0417", capa:"CAPA-118", pub:"PUB-A2",
+      body:"Vehicle initiated an unplanned stop after perception confidence dropped below threshold in dense fog outside the validated ODD visibility range. No collision. Flagged for ODD boundary review."
+    },
+    {
+      id:"INC-2287", title:"Late yield detection, unprotected left turn",
+      severity:"med", date:"2026-05-27", odd:"ODD-09", hara:"HARA-03 / ASIL B",
+      sgo:"SGO-2026-0398", capa:"CAPA-114", pub:"PUB-B1",
+      body:"Planner yielded later than target margin to an oncoming cyclist during an unprotected left turn. Recovered within spec but outside the comfort envelope. Under review with perception team."
+    },
+    {
+      id:"INC-2280", title:"Geofence drift near construction zone",
+      severity:"med", date:"2026-05-19", odd:"ODD-14", hara:"HARA-07 / ASIL C",
+      sgo:"—", capa:"CAPA-109", pub:"PUB-A2",
+      body:"Mapped ODD boundary lagged an active construction reroute by 40 meters. Vehicle self-corrected via geofence redundancy check before entering the affected segment."
+    },
+    {
+      id:"INC-2274", title:"RSA safety-driver takeover, low-light stop-and-go",
+      severity:"low", date:"2026-05-08", odd:"ODD-06", hara:"HARA-01 / ASIL A",
+      sgo:"—", capa:"CAPA-102", pub:"PUB-C1",
+      body:"Remote safety operator took over during a low-light stop-and-go merge after latency briefly exceeded the RSA SLA window. No safety impact; logged for SLA trend tracking."
+    },
+    {
+      id:"INC-2266", title:"False-positive obstacle brake, dense fog",
+      severity:"high", date:"2026-04-30", odd:"ODD-14", hara:"HARA-07 / ASIL C",
+      sgo:"SGO-2026-0351", capa:"CAPA-118", pub:"PUB-A2",
+      body:"Hard brake triggered by a false-positive obstacle classification in fog. Same failure cluster as INC-2291 and INC-2280 — third event tied to this ODD/HARA pairing in six weeks."
+    }
+  ],
+  linked: {
+    odd:{
+      "ODD-14":{label:"ODD-14", sub:"Visibility < 150m, fog/haze", body:"Operational design domain boundary for low-visibility atmospheric conditions. Currently under review after repeat events in this cluster — proposed tightening of the entry/exit visibility threshold."},
+      "ODD-09":{label:"ODD-09", sub:"Unprotected intersections", body:"Covers unsignalized and unprotected turning movements. No boundary changes proposed; event is within tolerance but tracked for trend."},
+      "ODD-06":{label:"ODD-06", sub:"Low-light stop-and-go", body:"Urban low-light merge and queue conditions. Linked to RSA latency SLA — three related events this quarter, all within SLA tolerance."}
+    },
+    hara:{
+      "HARA-07 / ASIL C":{label:"HARA-07", sub:"ASIL C — perception under degraded visibility", body:"Hazard: loss of obstacle detection confidence in low-visibility conditions. Currently the highest-frequency HARA line item this quarter — 3 of 5 incidents in this registry trace back to it."},
+      "HARA-03 / ASIL B":{label:"HARA-03", sub:"ASIL B — yield timing margin", body:"Hazard: insufficient yield margin at unprotected turns. Controllability rated moderate; driver/operator can recover, but comfort envelope is the tracked metric."},
+      "HARA-01 / ASIL A":{label:"HARA-01", sub:"ASIL A — remote assist latency", body:"Hazard: safety-relevant latency in the remote assistance link. Lowest severity tier; tracked via SLA compliance rather than individual incident review."}
+    },
+    sgo:{
+      "SGO-2026-0417":{label:"SGO-2026-0417", sub:"Filed to NHTSA", body:"Standing General Order crash-reporting entry filed within the 5-day window. Cross-referenced to CAPA-118 for closure tracking."},
+      "SGO-2026-0398":{label:"SGO-2026-0398", sub:"Filed to NHTSA", body:"Filed for the unprotected-turn yield event. No collision occurred; filed out of caution given proximity to a vulnerable road user."},
+      "SGO-2026-0351":{label:"SGO-2026-0351", sub:"Filed to NHTSA", body:"First filing in the current fog/false-positive cluster. Referenced by NHTSA in a follow-up data request — see PUB-A2 for the related research angle."}
+    },
+    capa:{
+      "CAPA-118":{label:"CAPA-118", sub:"Open — perception, fog ODD", body:"Root cause: perception confidence calibration in fog does not degrade gracefully near the ODD boundary. Corrective action: retrain classifier on expanded fog dataset, tighten ODD entry threshold. Owner: Perception team. Third linked incident — escalated to weekly review."},
+      "CAPA-114":{label:"CAPA-114", sub:"Open — planner, yield margin", body:"Root cause: yield margin calculation under-weights cyclist closing speed at unprotected turns. Corrective action: planner parameter update in next release train."},
+      "CAPA-109":{label:"CAPA-109", sub:"Closed — mapping, geofence lag", body:"Root cause: construction-zone reroute data lag in the mapping pipeline. Corrective action: reduced map refresh interval for active work zones. Verified closed 2026-05-30."},
+      "CAPA-102":{label:"CAPA-102", sub:"Monitoring — RSA latency", body:"Root cause: intermittent latency spikes on the remote assistance link during peak load. Corrective action: capacity headroom increase. In monitoring period before closure."}
+    },
+    pub:{
+      "PUB-A2":{label:"PUB-A2", sub:"Published research", body:"Industry paper on perception degradation modes in low-visibility conditions — cited internally as supporting evidence for the proposed ODD-14 threshold change."},
+      "PUB-B1":{label:"PUB-B1", sub:"Published research", body:"SAE technical paper on yield-margin modeling at unprotected intersections, referenced in the CAPA-114 corrective action design."},
+      "PUB-C1":{label:"PUB-C1", sub:"Industry standard", body:"Remote assistance latency and SLA guidance referenced when this ODD-06 SLA tracking was originally set up."}
+    }
+  }
+};
+
+let activeIncident = null;
+
+function sevClass(s){ return s==="high" ? "sev-high" : s==="med" ? "sev-med" : "sev-low"; }
+function sevLabel(s){ return s==="high" ? "HIGH" : s==="med" ? "MED" : "LOW"; }
+
+function renderQueue(){
+  const q = document.getElementById("queue");
+  data.incidents.forEach(inc=>{
+    const el = document.createElement("div");
+    el.className = "item";
+    el.id = "item-"+inc.id;
+    el.onclick = ()=>selectIncident(inc.id);
+    el.innerHTML = `
+      <div class="item-top">
+        <span class="item-id">${inc.id}</span>
+        <span class="sev ${sevClass(inc.severity)}">${sevLabel(inc.severity)}</span>
+      </div>
+      <div class="item-title">${inc.title}</div>
+      <div class="item-meta">${inc.date} · ${inc.odd}</div>
+    `;
+    q.appendChild(el);
+  });
+}
+
+function selectIncident(id){
+  activeIncident = data.incidents.find(i=>i.id===id);
+  document.querySelectorAll(".item").forEach(el=>el.classList.remove("active"));
+  document.getElementById("item-"+id).classList.add("active");
+  document.getElementById("graphTitle").textContent = activeIncident.id + " — " + activeIncident.title;
+  document.getElementById("graphDesc").textContent = activeIncident.body;
+  renderGraph();
+  renderDetail({type:"incident", key:activeIncident.id});
+}
+
+function renderGraph(){
+  const svg = document.getElementById("graphSvg");
+  if(!activeIncident){ svg.innerHTML = ""; return; }
+  const cx = 320, cy = 200;
+  const nodes = [
+    {type:"odd", key:activeIncident.odd, angle:-100, dist:150},
+    {type:"hara", key:activeIncident.hara, angle:-30, dist:160},
+    {type:"sgo", key:activeIncident.sgo, angle:40, dist:150},
+    {type:"capa", key:activeIncident.capa, angle:110, dist:160},
+    {type:"pub", key:activeIncident.pub, angle:180, dist:150}
+  ].filter(n=>n.key && n.key!=="—" && data.linked[n.type][n.key]);
+
+  let svgHtml = `<defs></defs>`;
+
+  nodes.forEach(n=>{
+    const rad = n.angle * Math.PI/180;
+    const x = cx + n.dist*Math.cos(rad);
+    const y = cy + n.dist*Math.sin(rad);
+    svgHtml += `<path class="link-line" d="M${cx},${cy} L${x},${y}"/>`;
+  });
+
+  svgHtml += `
+    <g class="node-group" onclick="renderDetail({type:'incident', key:'${activeIncident.id}'})">
+      <circle class="node-circle center" cx="${cx}" cy="${cy}" r="42"/>
+      <text class="node-label" x="${cx}" y="${cy-4}" text-anchor="middle">${activeIncident.id}</text>
+      <text class="node-sub" x="${cx}" y="${cy+11}" text-anchor="middle">incident</text>
+    </g>
+  `;
+
+  nodes.forEach(n=>{
+    const rad = n.angle * Math.PI/180;
+    const x = cx + n.dist*Math.cos(rad);
+    const y = cy + n.dist*Math.sin(rad);
+    const rec = data.linked[n.type][n.key];
+    svgHtml += `
+      <g class="node-group" onclick="renderDetail({type:'${n.type}', key:'${n.key}'})">
+        <circle class="node-circle" cx="${x}" cy="${y}" r="36"/>
+        <text class="node-label" x="${x}" y="${y-3}" text-anchor="middle">${rec.label}</text>
+        <text class="node-sub" x="${x}" y="${y+11}" text-anchor="middle">${n.type}</text>
+      </g>
+    `;
+  });
+
+  svg.innerHTML = svgHtml;
+}
+
+function renderDetail(ref){
+  const d = document.getElementById("detail");
+  if(ref.type === "incident"){
+    const inc = data.incidents.find(i=>i.id===ref.key);
+    d.innerHTML = `
+      <div class="detail-eyebrow">Incident record</div>
+      <div class="detail-title">${inc.title}</div>
+      <div class="detail-row"><span>ID</span><span>${inc.id}</span></div>
+      <div class="detail-row"><span>Date</span><span>${inc.date}</span></div>
+      <div class="detail-row"><span>Severity</span><span>${sevLabel(inc.severity)}</span></div>
+      <div class="detail-row"><span>ODD</span><span>${inc.odd}</span></div>
+      <div class="detail-row"><span>HARA / ASIL</span><span>${inc.hara}</span></div>
+      <div class="detail-row"><span>SGO filing</span><span>${inc.sgo}</span></div>
+      <div class="detail-row"><span>CAPA</span><span>${inc.capa}</span></div>
+      <div class="detail-body">${inc.body}</div>
+    `;
+  } else {
+    const rec = data.linked[ref.type][ref.key];
+    const typeLabels = {odd:"ODD boundary", hara:"HARA / ASIL line item", sgo:"Regulatory filing", capa:"Corrective action", pub:"Published research"};
+    d.innerHTML = `
+      <div class="detail-eyebrow">${typeLabels[ref.type]}</div>
+      <div class="detail-title">${rec.label}</div>
+      <div class="detail-row"><span>Reference</span><span>${rec.sub}</span></div>
+      <div class="detail-body">${rec.body}</div>
+      <div class="tag-row"><span class="tag">linked from ${activeIncident.id}</span></div>
+    `;
+  }
+}
+
+renderQueue();
+selectIncident(data.incidents[0].id);
+</script>
+
+</body>
+</html>
