@@ -2,6 +2,13 @@
 
 > **A proof-of-concept exploring how fragmented safety information could be connected into a usable operational intelligence system.**
 
+## Live Prototype
+
+### [Launch the Interactive SIR Proof of Concept](https://sorianic.github.io/AV-Safety-Intelligence-System/)
+
+Explore the Incident Registry, Safety Intelligence Registry, CAPA Tracker, and Safety Dashboard as interactive browser-based prototypes.
+
+> **Note:** This is a conceptual portfolio demonstration using synthetic and illustrative data. It is not a production safety system.
 ---
 
 ## Concept Overview
