@@ -146,14 +146,12 @@ toward:
 
 # Proof-of-Concept Prototypes
 
-This repository contains several interface prototypes representing different parts of the SIR concept.
-
 | Prototype | Purpose |
 |:---|:---|
-| **Incident Registry** | Demonstrates structured collection and review of operational incidents. |
-| **Safety Intelligence Registry** | Demonstrates relationships between incidents, ODD conditions, hazards, CAPAs, regulatory information, and research. |
-| **CAPA Tracker** | Demonstrates investigation, root-cause documentation, corrective actions, ownership, and effectiveness verification. |
-| **Safety Dashboard** | Demonstrates how connected safety information could support trend analysis and organizational visibility. |
+| **[Incident Registry](./prototypes/incident-registry.html)** | Demonstrates structured collection and review of operational incidents. |
+| **[Safety Intelligence Registry](./prototypes/safety-intelligence-registry.html)** | Demonstrates relationships between incidents, ODD conditions, hazards, CAPAs, regulatory information, and research. |
+| **[CAPA Tracker](./prototypes/capa-tracker.html)** | Demonstrates investigation, root-cause documentation, corrective actions, ownership, and effectiveness verification. |
+| **[Safety Dashboard](./prototypes/safety-dashboard.html)** | Demonstrates how connected safety information could support trend analysis and organizational visibility. |
 
 These prototypes are intended to communicate **workflow, architecture, and operational concepts**, not production software.
 
