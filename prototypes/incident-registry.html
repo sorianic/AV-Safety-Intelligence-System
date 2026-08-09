@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AV Incident &amp; Accident Registry</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --navy:#1C2B39;
+    --navy-2:#243447;
+    --paper:#EEF1F4;
+    --paper-2:#FFFFFF;
+    --ink:#1C2B39;
+    --ink-dim:#5B6B7C;
+    --line:#D6DCE2;
+    --amber:#C88A2C;
+    --amber-bg:#FBF1DE;
+    --red:#B03A2E;
+    --red-bg:#FBE7E4;
+    --green:#3E7A5E;
+    --green-bg:#E5F0EA;
+    --slate:#3C5A73;
+    --slate-bg:#E4EBF0;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    background:var(--navy);
+    color:#fff;
+    padding:22px 28px 18px;
+    border-bottom:3px solid var(--amber);
+  }
+  .header-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand .mark{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:2px;
+    color:var(--amber);
+    border:1px solid var(--amber);
+    padding:3px 7px;
+    border-radius:2px;
+  }
+  h1{
+    font-size:22px;
+    margin:6px 0 2px;
+    font-weight:600;
+    letter-spacing:0.2px;
+  }
+  .subtitle{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:#AEC0CF;
+    margin:0;
+  }
+  .clock{
+    font-family:var(--mono);
+    font-size:12px;
+    color:#AEC0CF;
+    text-align:right;
+  }
+
+  /* ---------- Stat strip ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin:20px 28px 0;
+  }
+  .stat{
+    background:var(--paper-2);
+    padding:14px 16px;
+  }
+  .stat .num{
+    font-family:var(--mono);
+    font-size:26px;
+    font-weight:600;
+    line-height:1;
+  }
+  .stat .label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    color:var(--ink-dim);
+    margin-top:6px;
+  }
+  .stat.critical .num{color:var(--red);}
+  .stat.open .num{color:var(--amber);}
+  .stat.resolved .num{color:var(--green);}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    margin:20px 28px 0;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    padding:14px 16px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+  }
+  .search-wrap{
+    flex:1 1 260px;
+    position:relative;
+  }
+  .search-wrap input{
+    width:100%;
+    padding:9px 12px 9px 30px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-family:var(--sans);
+    font-size:13.5px;
+    background:var(--paper);
+  }
+  .search-wrap::before{
+    content:"⌕";
+    position:absolute;
+    left:10px;
+    top:8px;
+    color:var(--ink-dim);
+    font-size:15px;
+  }
+  select, .btn{
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--paper);
+    font-family:var(--sans);
+    font-size:13px;
+    color:var(--ink);
+  }
+  .btn{
+    cursor:pointer;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .btn-primary{
+    background:var(--navy);
+    color:#fff;
+    border-color:var(--navy);
+  }
+  .btn-primary:hover{background:var(--navy-2);}
+  .btn-ghost:hover{background:var(--slate-bg);}
+  .result-count{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-dim);
+    margin-left:auto;
+    padding-left:4px;
+  }
+
+  /* ---------- Table ---------- */
+  .table-wrap{
+    margin:14px 28px 40px;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    overflow-x:auto;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    min-width:920px;
+  }
+  thead th{
+    text-align:left;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--ink-dim);
+    padding:10px 12px;
+    border-bottom:2px solid var(--navy);
+    cursor:pointer;
+    user-select:none;
+    white-space:nowrap;
+  }
+  thead th:hover{color:var(--ink);}
+  thead th.sorted::after{content:" ▾"; color:var(--amber);}
+  tbody tr{
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+  }
+  tbody tr:hover{background:var(--slate-bg);}
+  tbody td{
+    padding:10px 12px;
+    vertical-align:top;
+  }
+  .id-cell{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-dim);
+  }
+  .rail{
+    display:inline-block;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    margin-right:7px;
+    vertical-align:middle;
+  }
+  .rail.critical{background:var(--red);}
+  .rail.high{background:var(--amber);}
+  .rail.moderate{background:var(--slate);}
+  .rail.low{background:var(--green);}
+
+  .badge{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    padding:3px 7px;
+    border-radius:2px;
+    font-weight:600;
+  }
+  .badge.open{background:var(--amber-bg);color:var(--amber);}
+  .badge.investigating{background:var(--slate-bg);color:var(--slate);}
+  .badge.closed{background:var(--green-bg);color:var(--green);}
+  .badge.critical{background:var(--red-bg);color:var(--red);}
+  .badge.high{background:var(--amber-bg);color:var(--amber);}
+  .badge.moderate{background:var(--slate-bg);color:var(--slate);}
+  .badge.low{background:var(--green-bg);color:var(--green);}
+
+  .cat-tag{
+    font-size:11.5px;
+    color:var(--ink-dim);
+    font-family:var(--mono);
+  }
+
+  .empty-state{
+    padding:60px 20px;
+    text-align:center;
+    color:var(--ink-dim);
+  }
+
+  /* ---------- Modal (detail / add) ---------- */
+  .overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(28,43,57,0.55);
+    z-index:50;
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 16px;
+    overflow-y:auto;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--paper-2);
+    width:100%;
+    max-width:640px;
+    border:1px solid var(--line);
+    border-top:4px solid var(--amber);
+  }
+  .modal-header{
+    padding:18px 22px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+  }
+  .modal-header h2{
+    margin:0 0 4px;
+    font-size:17px;
+  }
+  .modal-header .id-cell{font-size:12.5px;}
+  .modal-close{
+    background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-dim);
+    line-height:1;
+  }
+  .modal-body{padding:20px 22px;}
+  .detail-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 20px;
+    margin-bottom:16px;
+  }
+  .detail-field label{
+    display:block;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--ink-dim);
+    margin-bottom:3px;
+  }
+  .detail-field .val{font-size:13.5px;}
+  .detail-field .val.mono{font-family:var(--mono);font-size:12.5px;}
+  .narrative{
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:12px 14px;
+    font-size:13.5px;
+    line-height:1.55;
+    margin-top:4px;
+  }
+  .narrative-label{font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-dim);margin-bottom:5px;}
+
+  /* form */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
+  .form-field{display:flex;flex-direction:column;gap:4px;}
+  .form-field.full{grid-column:1/-1;}
+  .form-field label{font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-dim);}
+  .form-field input, .form-field select, .form-field textarea{
+    padding:8px 10px;border:1px solid var(--line);border-radius:3px;font-family:var(--sans);font-size:13.5px;background:var(--paper);
+  }
+  .form-field textarea{resize:vertical;min-height:70px;font-family:var(--sans);}
+  .modal-footer{
+    padding:16px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;
+  }
+
+  footer{
+    text-align:center;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-dim);
+    padding:20px;
+  }
+
+  @media (max-width:720px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .detail-grid{grid-template-columns:1fr;}
+    .form-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="brand">
+        <span class="mark">POC</span>
+        <span style="font-family:var(--mono);font-size:11.5px;color:#AEC0CF;letter-spacing:1px;">SAFETY OPS</span>
+      </div>
+      <h1>AV Incident &amp; Accident Registry</h1>
+      <p class="subtitle">Consolidated inventory — crash reports, disengagements, ODD boundary events &amp; vendor SLA breaches</p>
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+</header>
+
+<div class="stats" id="statsRow"></div>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search by ID, location, description, vehicle, filing…">
+  </div>
+  <select id="filterCategory"></select>
+  <select id="filterSeverity"></select>
+  <select id="filterStatus"></select>
+  <select id="filterSource"></select>
+  <button class="btn btn-ghost" id="resetBtn">Reset</button>
+  <button class="btn btn-primary" id="addBtn">+ Log Incident</button>
+  <span class="result-count" id="resultCount"></span>
+</div>
+
+<div class="table-wrap">
+  <table id="incidentTable">
+    <thead>
+      <tr>
+        <th data-key="id">Record ID</th>
+        <th data-key="date">Date</th>
+        <th data-key="category">Category</th>
+        <th data-key="location">Location</th>
+        <th data-key="vehicle">Vehicle / Fleet</th>
+        <th data-key="severity">Severity</th>
+        <th data-key="status">Status</th>
+        <th data-key="source">Source</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="empty-state" id="emptyState" style="display:none;">No records match the current filters.</div>
+</div>
+
+<footer>AV INCIDENT &amp; ACCIDENT REGISTRY — PROOF-OF-CONCEPT TOOL — ILLUSTRATIVE DATA, NOT AFFILIATED WITH ANY COMPANY</footer>
+
+<!-- Detail modal -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal" id="detailModal"></div>
+</div>
+
+<!-- Add modal -->
+<div class="overlay" id="addOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2>Log New Incident</h2>
+        <div class="id-cell" id="nextIdPreview"></div>
+      </div>
+      <button class="modal-close" id="addCloseBtn">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Date</label>
+          <input type="date" id="f_date">
+        </div>
+        <div class="form-field">
+          <label>Category</label>
+          <select id="f_category">
+            <option>NHTSA SGO Crash Report</option>
+            <option>CA DMV Disengagement</option>
+            <option>CA DMV Permit Violation</option>
+            <option>ODD Boundary Drift</option>
+            <option>Vendor / RSA SLA Breach</option>
+            <option>Roadside Assistance Escalation</option>
+            <option>Other Safety Event</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Location</label>
+          <input type="text" id="f_location" placeholder="City, State">
+        </div>
+        <div class="form-field">
+          <label>Vehicle / Fleet ID</label>
+          <input type="text" id="f_vehicle" placeholder="e.g. WV-0042">
+        </div>
+        <div class="form-field">
+          <label>Severity</label>
+          <select id="f_severity">
+            <option>Critical</option>
+            <option>High</option>
+            <option>Moderate</option>
+            <option>Low</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Status</label>
+          <select id="f_status">
+            <option>Open</option>
+            <option>Investigating</option>
+            <option>Closed</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Filing / Source Ref</label>
+          <input type="text" id="f_source" placeholder="e.g. SGO-2026-00417">
+        </div>
+        <div class="form-field">
+          <label>Owner</label>
+          <input type="text" id="f_owner" placeholder="Assigned investigator">
+        </div>
+        <div class="form-field full">
+          <label>Narrative / Description</label>
+          <textarea id="f_narrative" placeholder="What happened, contributing factors, resolution notes…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancelAddBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveAddBtn">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ Seed data ============
+   Illustrative sample set spanning the reporting streams relevant to AV
+   safety/compliance ops: NHTSA Standing General Order crash reports,
+   CA DMV disengagement & permit violation reports, ODD boundary drift
+   events, and Roadside Assistance / vendor SLA breaches.
+*/
+const SEED = [
+{id:"REG-0001", date:"2026-01-14", category:"NHTSA SGO Crash Report", location:"San Francisco, CA", vehicle:"AV-1187", severity:"High", status:"Closed", source:"SGO-2026-00112", owner:"M. Alvarez",
+  narrative:"AV struck by a following vehicle at a controlled intersection while stopped for a red light. No injuries reported. SGO report filed within the 1-day window per NHTSA reporting trigger for a police-reportable crash. Root cause attributed to the third-party driver; no AV system fault identified in post-event review."},
+{id:"REG-0002", date:"2026-01-22", category:"ODD Boundary Drift", location:"Chandler, AZ", vehicle:"AV-0942", severity:"Moderate", status:"Closed", source:"ODD-2026-0031", owner:"T. Nakamura",
+  narrative:"Vehicle briefly routed 0.4 miles outside the mapped Operational Design Domain boundary during a construction detour. Safety driver disengaged and resumed manual control. Mapping update submitted to close the ODD gap; no incident or contact occurred."},
+{id:"REG-0003", date:"2026-02-03", category:"CA DMV Disengagement", location:"Mountain View, CA", vehicle:"AV-0765", severity:"Low", status:"Closed", source:"DMV-DE-2026-0089", owner:"R. Singh",
+  narrative:"Planned disengagement triggered by unprotected left-turn hesitation in dense pedestrian traffic near a school zone. Logged per CA DMV annual disengagement reporting requirement. No collision, no injury. Behavior flagged for planner tuning."},
+{id:"REG-0004", date:"2026-02-11", category:"Vendor / RSA SLA Breach", location:"Tempe, AZ", vehicle:"Fleet — Zone 4", severity:"Moderate", status:"Investigating", source:"RSA-SLA-0207", owner:"J. Bekele",
+  narrative:"Roadside assistance vendor exceeded the 20-minute contracted response window for a stalled vehicle blocking a travel lane, arriving at 34 minutes. Under review with vendor for SLA remediation; rider was rebooked via backup dispatch at minute 12."},
+{id:"REG-0005", date:"2026-02-19", category:"NHTSA SGO Crash Report", location:"Phoenix, AZ", vehicle:"AV-0511", severity:"Critical", status:"Investigating", source:"SGO-2026-00158", owner:"M. Alvarez",
+  narrative:"AV made contact with a cyclist who entered the roadway from between parked vehicles outside a marked crosswalk. Cyclist transported for evaluation. SGO report filed same day per crash-resulting-in-injury trigger. Full incident review and data pull in progress; NTSB has requested the event data recorder file under the 'Notice' provision."},
+{id:"REG-0006", date:"2026-03-02", category:"CA DMV Permit Violation", location:"Los Angeles, CA", vehicle:"Fleet — Zone 2", severity:"High", status:"Closed", source:"DMV-PV-2026-0044", owner:"R. Singh",
+  narrative:"Two vehicles operated for a brief window outside the approved passenger-service permit boundary due to a geofence configuration error pushed in a map update. Self-reported to CA DMV within 48 hours. Configuration rollback completed; permit boundary re-validated."},
+{id:"REG-0007", date:"2026-03-10", category:"Roadside Assistance Escalation", location:"Austin, TX", vehicle:"AV-1032", severity:"Low", status:"Closed", source:"RAD-2026-0391", owner:"J. Bekele",
+  narrative:"Rider-initiated escalation after vehicle paused mid-route near a double-parked delivery truck for 6 minutes. RSA operator remotely reviewed sensor feed and cleared the vehicle to proceed manually via teleassist. No safety event."},
+{id:"REG-0008", date:"2026-03-18", category:"ODD Boundary Drift", location:"San Francisco, CA", vehicle:"AV-0654", severity:"Low", status:"Closed", source:"ODD-2026-0058", owner:"T. Nakamura",
+  narrative:"Minor ODD excursion (weather-triggered) when dense fog reduced sensor confidence below threshold near the mapped domain edge. Vehicle executed a minimal-risk-condition pullover per design; no external contact."},
+{id:"REG-0009", date:"2026-04-01", category:"NHTSA SGO Crash Report", location:"Chandler, AZ", vehicle:"AV-0888", severity:"Moderate", status:"Closed", source:"SGO-2026-00201", owner:"M. Alvarez",
+  narrative:"Low-speed contact with a parked vehicle's side mirror while navigating a construction-narrowed lane. Property damage only, under NHTSA's SGO reporting threshold for damage-only events but filed voluntarily. Lane-narrowing behavior added to scenario regression suite."},
+{id:"REG-0010", date:"2026-04-09", category:"Vendor / RSA SLA Breach", location:"Mountain View, CA", vehicle:"Fleet — Zone 1", severity:"Low", status:"Closed", source:"RSA-SLA-0244", owner:"J. Bekele",
+  narrative:"Field service vendor missed scheduled sensor recalibration window by 3 hours for two vehicles, temporarily reducing available fleet capacity. No safety exposure; vendor issued a corrective action acknowledgement."},
+{id:"REG-0011", date:"2026-04-20", category:"CA DMV Disengagement", location:"Los Angeles, CA", vehicle:"AV-0219", severity:"Moderate", status:"Open", source:"DMV-DE-2026-0117", owner:"R. Singh",
+  narrative:"Disengagement following an unexpected hard-braking event by a lead vehicle on a downhill grade. Safety driver took control after a perception-confidence dip. Under review to determine whether reporting language meets the DMV disengagement definition or qualifies as normal operator override."},
+{id:"REG-0012", date:"2026-05-05", category:"NHTSA SGO Crash Report", location:"Austin, TX", vehicle:"AV-1210", severity:"High", status:"Open", source:"SGO-2026-00266", owner:"M. Alvarez",
+  narrative:"Rear-end contact by a trailing vehicle after AV performed a legal but abrupt stop in response to a pedestrian stepping off a curb. Minor injury reported by occupant of trailing vehicle. SGO filing submitted; investigation into stop abruptness and following-distance context ongoing."},
+{id:"REG-0013", date:"2026-05-14", category:"Roadside Assistance Escalation", location:"Phoenix, AZ", vehicle:"AV-0733", severity:"Moderate", status:"Investigating", source:"RAD-2026-0455", owner:"J. Bekele",
+  narrative:"Rider became distressed after vehicle stopped mid-trip due to a software fault requiring remote reset. RSA response time within SLA, but rider communication script did not adequately explain the delay. Flagged for rider-communication training update."},
+{id:"REG-0014", date:"2026-05-27", category:"ODD Boundary Drift", location:"Tempe, AZ", vehicle:"AV-0399", severity:"High", status:"Open", source:"ODD-2026-0102", owner:"T. Nakamura",
+  narrative:"Vehicle continued operating for approximately 1.1 miles beyond the mapped ODD boundary following a mapping data sync failure before a geofence alert triggered manual takeover. No collision. Under review as a potential systemic mapping-pipeline issue rather than an isolated event."},
+{id:"REG-0015", date:"2026-06-03", category:"CA DMV Permit Violation", location:"San Francisco, CA", vehicle:"Fleet — Zone 1", severity:"Critical", status:"Open", source:"DMV-PV-2026-0071", owner:"R. Singh",
+  narrative:"Fleet operated passenger service in an expansion zone prior to the effective date of the amended CA DMV permit, discovered during a routine internal audit. Self-disclosed to DMV; service in the zone suspended pending permit confirmation. Root cause: launch calendar not synced with permit legal team."}
+];
+
+/* ============ State ============ */
+let records = [];
+let sortKey = "date";
+let sortDir = "desc";
+
+const STORE_KEY = "av-incident-registry:records";
+
+async function loadRecords(){
+  try{
+    const res = await window.storage.get(STORE_KEY);
+    if(res && res.value){
+      records = JSON.parse(res.value);
+      return;
+    }
+  }catch(e){ /* key not found, fall through to seed */ }
+  records = SEED.slice();
+  await persist();
+}
+
+async function persist(){
+  try{
+    await window.storage.set(STORE_KEY, JSON.stringify(records));
+  }catch(e){
+    console.error("Storage error", e);
+  }
+}
+
+/* ============ Helpers ============ */
+function sevRank(s){ return {Critical:0, High:1, Moderate:2, Low:3}[s] ?? 4; }
+function slug(s){ return s.toLowerCase(); }
+
+function nextId(){
+  const nums = records.map(r => parseInt(r.id.split("-")[1],10)).filter(n=>!isNaN(n));
+  const next = (nums.length ? Math.max(...nums) : 0) + 1;
+  return "REG-" + String(next).padStart(4,"0");
+}
+
+function populateFilters(){
+  const cats = [...new Set(records.map(r=>r.category))].sort();
+  const sevs = ["Critical","High","Moderate","Low"];
+  const statuses = ["Open","Investigating","Closed"];
+  const sources = [...new Set(records.map(r=>r.category.includes("SGO") ? "NHTSA" : r.category.includes("DMV") ? "CA DMV" : r.category.includes("ODD") ? "Internal ODD Monitoring" : "Vendor / RSA"))].sort();
+
+  fillSelect("filterCategory", "All categories", cats);
+  fillSelect("filterSeverity", "All severities", sevs);
+  fillSelect("filterStatus", "All statuses", statuses);
+  fillSelect("filterSource", "All sources", sources);
+}
+
+function fillSelect(id, allLabel, items){
+  const el = document.getElementById(id);
+  const current = el.value;
+  el.innerHTML = `<option value="">${allLabel}</option>` + items.map(i=>`<option value="${i}">${i}</option>`).join("");
+  if(items.includes(current)) el.value = current;
+}
+
+function sourceGroup(category){
+  if(category.includes("SGO")) return "NHTSA";
+  if(category.includes("DMV")) return "CA DMV";
+  if(category.includes("ODD")) return "Internal ODD Monitoring";
+  return "Vendor / RSA";
+}
+
+/* ============ Render ============ */
+function currentFilters(){
+  return {
+    q: document.getElementById("searchInput").value.trim().toLowerCase(),
+    category: document.getElementById("filterCategory").value,
+    severity: document.getElementById("filterSeverity").value,
+    status: document.getElementById("filterStatus").value,
+    source: document.getElementById("filterSource").value,
+  };
+}
+
+function filteredRecords(){
+  const f = currentFilters();
+  let rows = records.filter(r=>{
+    if(f.category && r.category !== f.category) return false;
+    if(f.severity && r.severity !== f.severity) return false;
+    if(f.status && r.status !== f.status) return false;
+    if(f.source && sourceGroup(r.category) !== f.source) return false;
+    if(f.q){
+      const hay = [r.id, r.location, r.vehicle, r.narrative, r.source, r.owner, r.category].join(" ").toLowerCase();
+      if(!hay.includes(f.q)) return false;
+    }
+    return true;
+  });
+
+  rows.sort((a,b)=>{
+    let av, bv;
+    if(sortKey === "severity"){ av = sevRank(a.severity); bv = sevRank(b.severity); }
+    else { av = a[sortKey]; bv = b[sortKey]; }
+    if(av < bv) return sortDir === "asc" ? -1 : 1;
+    if(av > bv) return sortDir === "asc" ? 1 : -1;
+    return 0;
+  });
+  return rows;
+}
+
+function renderStats(){
+  const total = records.length;
+  const critical = records.filter(r=>r.severity==="Critical").length;
+  const open = records.filter(r=>r.status==="Open").length;
+  const investigating = records.filter(r=>r.status==="Investigating").length;
+  const closed = records.filter(r=>r.status==="Closed").length;
+
+  const stats = [
+    {label:"Total Records", num:total, cls:""},
+    {label:"Critical Severity", num:critical, cls:"critical"},
+    {label:"Open", num:open, cls:"open"},
+    {label:"Investigating", num:investigating, cls:"open"},
+    {label:"Closed", num:closed, cls:"resolved"},
+  ];
+  document.getElementById("statsRow").innerHTML = stats.map(s=>`
+    <div class="stat ${s.cls}">
+      <div class="num">${s.num}</div>
+      <div class="label">${s.label}</div>
+    </div>
+  `).join("");
+}
+
+function renderTable(){
+  const rows = filteredRecords();
+  const body = document.getElementById("tableBody");
+  const empty = document.getElementById("emptyState");
+  document.getElementById("resultCount").textContent = `${rows.length} of ${records.length} records`;
+
+  document.querySelectorAll("thead th").forEach(th=>{
+    th.classList.toggle("sorted", th.dataset.key === sortKey);
+  });
+
+  if(rows.length === 0){
+    body.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  body.innerHTML = rows.map(r=>`
+    <tr data-id="${r.id}">
+      <td class="id-cell">${r.id}</td>
+      <td>${r.date}</td>
+      <td><span class="rail ${slug(r.severity)}"></span><span class="cat-tag">${r.category}</span></td>
+      <td>${r.location}</td>
+      <td class="id-cell">${r.vehicle}</td>
+      <td><span class="badge ${slug(r.severity)}">${r.severity}</span></td>
+      <td><span class="badge ${slug(r.status)}">${r.status}</span></td>
+      <td class="cat-tag">${sourceGroup(r.category)}</td>
+    </tr>
+  `).join("");
+
+  body.querySelectorAll("tr").forEach(tr=>{
+    tr.addEventListener("click", ()=> openDetail(tr.dataset.id));
+  });
+}
+
+function renderAll(){
+  populateFilters();
+  renderStats();
+  renderTable();
+}
+
+/* ============ Detail modal ============ */
+function openDetail(id){
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  const modal = document.getElementById("detailModal");
+  modal.innerHTML = `
+    <div class="modal-header">
+      <div>
+        <h2>${r.category}</h2>
+        <div class="id-cell">${r.id} · ${r.source}</div>
+      </div>
+      <button class="modal-close" id="detailCloseBtn">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-field"><label>Date</label><div class="val">${r.date}</div></div>
+        <div class="detail-field"><label>Location</label><div class="val">${r.location}</div></div>
+        <div class="detail-field"><label>Vehicle / Fleet</label><div class="val mono">${r.vehicle}</div></div>
+        <div class="detail-field"><label>Owner</label><div class="val">${r.owner || "—"}</div></div>
+        <div class="detail-field"><label>Severity</label><div class="val"><span class="badge ${slug(r.severity)}">${r.severity}</span></div></div>
+        <div class="detail-field"><label>Status</label><div class="val"><span class="badge ${slug(r.status)}">${r.status}</span></div></div>
+      </div>
+      <div class="narrative-label">Narrative</div>
+      <div class="narrative">${r.narrative}</div>
+      <div class="detail-grid" style="margin-top:16px;">
+        <div class="detail-field">
+          <label>Update status</label>
+          <select id="statusUpdate">
+            <option ${r.status==="Open"?"selected":""}>Open</option>
+            <option ${r.status==="Investigating"?"selected":""}>Investigating</option>
+            <option ${r.status==="Closed"?"selected":""}>Closed</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="deleteRecordBtn">Delete record</button>
+      <button class="btn btn-primary" id="applyStatusBtn">Apply</button>
+    </div>
+  `;
+  document.getElementById("detailOverlay").classList.add("show");
+  document.getElementById("detailCloseBtn").addEventListener("click", closeDetail);
+  document.getElementById("applyStatusBtn").addEventListener("click", async ()=>{
+    r.status = document.getElementById("statusUpdate").value;
+    await persist();
+    renderAll();
+    closeDetail();
+  });
+  document.getElementById("deleteRecordBtn").addEventListener("click", async ()=>{
+    if(confirm(`Delete record ${r.id}? This cannot be undone.`)){
+      records = records.filter(x=>x.id!==r.id);
+      await persist();
+      renderAll();
+      closeDetail();
+    }
+  });
+}
+function closeDetail(){
+  document.getElementById("detailOverlay").classList.remove("show");
+}
+document.getElementById("detailOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "detailOverlay") closeDetail();
+});
+
+/* ============ Add modal ============ */
+function openAdd(){
+  document.getElementById("nextIdPreview").textContent = nextId();
+  document.getElementById("f_date").value = new Date().toISOString().slice(0,10);
+  ["f_location","f_vehicle","f_source","f_owner","f_narrative"].forEach(id=>document.getElementById(id).value = "");
+  document.getElementById("f_category").selectedIndex = 0;
+  document.getElementById("f_severity").selectedIndex = 0;
+  document.getElementById("f_status").selectedIndex = 0;
+  document.getElementById("addOverlay").classList.add("show");
+}
+function closeAdd(){
+  document.getElementById("addOverlay").classList.remove("show");
+}
+document.getElementById("addBtn").addEventListener("click", openAdd);
+document.getElementById("addCloseBtn").addEventListener("click", closeAdd);
+document.getElementById("cancelAddBtn").addEventListener("click", closeAdd);
+document.getElementById("addOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "addOverlay") closeAdd();
+});
+
+document.getElementById("saveAddBtn").addEventListener("click", async ()=>{
+  const loc = document.getElementById("f_location").value.trim();
+  const veh = document.getElementById("f_vehicle").value.trim();
+  if(!loc || !veh){
+    alert("Location and Vehicle / Fleet ID are required.");
+    return;
+  }
+  const rec = {
+    id: nextId(),
+    date: document.getElementById("f_date").value || new Date().toISOString().slice(0,10),
+    category: document.getElementById("f_category").value,
+    location: loc,
+    vehicle: veh,
+    severity: document.getElementById("f_severity").value,
+    status: document.getElementById("f_status").value,
+    source: document.getElementById("f_source").value.trim() || "—",
+    owner: document.getElementById("f_owner").value.trim() || "—",
+    narrative: document.getElementById("f_narrative").value.trim() || "No narrative provided."
+  };
+  records.unshift(rec);
+  await persist();
+  renderAll();
+  closeAdd();
+});
+
+/* ============ Toolbar events ============ */
+["searchInput","filterCategory","filterSeverity","filterStatus","filterSource"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", renderTable);
+  document.getElementById(id).addEventListener("change", renderTable);
+});
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  document.getElementById("searchInput").value = "";
+  ["filterCategory","filterSeverity","filterStatus","filterSource"].forEach(id=>document.getElementById(id).value = "");
+  renderTable();
+});
+
+document.querySelectorAll("thead th").forEach(th=>{
+  th.addEventListener("click", ()=>{
+    const key = th.dataset.key;
+    if(sortKey === key){ sortDir = sortDir === "asc" ? "desc" : "asc"; }
+    else { sortKey = key; sortDir = "asc"; }
+    renderTable();
+  });
+});
+
+/* ============ Clock ============ */
+function tickClock(){
+  const now = new Date();
+  document.getElementById("clock").textContent = now.toLocaleString("en-US", {
+    weekday:"short", month:"short", day:"numeric", year:"numeric",
+    hour:"2-digit", minute:"2-digit"
+  });
+}
+setInterval(tickClock, 1000*30);
+
+/* ============ Init ============ */
+(async function init(){
+  tickClock();
+  await loadRecords();
+  renderAll();
+})();
+</script>
+</body>
+</html>
