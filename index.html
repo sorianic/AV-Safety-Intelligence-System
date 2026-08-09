@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>AV Safety Intelligence System (SIR)</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #f7f9fc;
+      color: #172033;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 30px;
+    }
+
+    header {
+      background: #10243e;
+      color: white;
+      padding: 70px 0 60px;
+    }
+
+    header h1 {
+      margin: 0 0 10px;
+      font-size: 42px;
+      letter-spacing: -1px;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 20px;
+      color: #cbd5e1;
+      max-width: 750px;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 25px;
+      padding: 7px 12px;
+      border: 1px solid #64748b;
+      border-radius: 5px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #e2e8f0;
+    }
+
+    section {
+      padding: 55px 0;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+
+    .intro {
+      max-width: 850px;
+      font-size: 17px;
+      color: #475569;
+    }
+
+    .flow {
+      margin-top: 35px;
+      padding: 25px;
+      background: white;
+      border: 1px solid #dbe2ea;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 17px;
+      word-spacing: 8px;
+    }
+
+    .projects {
+      background: #eef2f7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #dbe2ea;
+      border-radius: 8px;
+      padding: 28px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .card p {
+      color: #64748b;
+      min-height: 75px;
+    }
+
+    .card a {
+      display: inline-block;
+      margin-top: 10px;
+      color: #1d4ed8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .card a:hover {
+      text-decoration: underline;
+    }
+
+    .principle {
+      border-left: 4px solid #334155;
+      padding-left: 20px;
+      margin-top: 30px;
+      font-size: 18px;
+      color: #334155;
+    }
+
+    .disclaimer {
+      background: #fff;
+      border-top: 1px solid #dbe2ea;
+      padding: 35px 0;
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    footer {
+      background: #10243e;
+      color: #94a3b8;
+      padding: 25px 0;
+      font-size: 14px;
+    }
+
+    footer strong {
+      color: white;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      header h1 {
+        font-size: 32px;
+      }
+
+      .container {
+        padding: 0 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <h1>AV Safety Intelligence System (SIR)</h1>
+
+    <p>
+      A proof-of-concept exploring how fragmented safety information
+      could be connected into usable operational intelligence.
+    </p>
+
+    <div class="status">
+      Concept / Proof of Concept
+    </div>
+  </div>
+</header>
+
+
+<section>
+  <div class="container">
+
+    <h2>The Concept</h2>
+
+    <p class="intro">
+      Safety-critical organizations can generate enormous amounts of
+      information across incidents, investigations, corrective actions,
+      hazard analyses, regulations, research, and operational systems.
+      SIR explores what could happen if those sources were connected
+      rather than treated as isolated records.
+    </p>
+
+    <div class="flow">
+      INGEST → NORMALIZE → CONNECT → ANALYZE → ACT → LEARN
+    </div>
+
+    <div class="principle">
+      The objective is not to replace safety professionals or automate
+      safety decisions. The objective is to help people find relationships,
+      recognize patterns, investigate efficiently, and make better-informed
+      decisions.
+    </div>
+
+  </div>
+</section>
+
+
+<section class="projects">
+  <div class="container">
+
+    <h2>Explore the Prototypes</h2>
+
+    <p class="intro">
+      Each prototype represents a different part of the larger SIR concept.
+      Together they demonstrate how safety information could move from an
+      individual event toward connected organizational learning.
+    </p>
+
+    <div class="grid">
+
+      <div class="card">
+        <h3>Incident Registry</h3>
+
+        <p>
+          Structured collection and review of operational incidents,
+          classifications, conditions, and investigation status.
+        </p>
+
+        <a href="./prototypes/incident-registry.html">
+          Launch Prototype →
+        </a>
+      </div>
+
+
+      <div class="card">
+        <h3>Safety Intelligence Registry</h3>
+
+        <p>
+          Explores relationships between incidents, ODD conditions,
+          hazards, corrective actions, regulatory information, and research.
+        </p>
+
+        <a href="./prototypes/safety-intelligence-registry.html">
+          Launch Prototype →
+        </a>
+      </div>
+
+
+      <div class="card">
+        <h3>CAPA Tracker</h3>
+
+        <p>
+          Demonstrates investigation workflow, root-cause documentation,
+          corrective actions, ownership, verification, and closure.
+        </p>
+
+        <a href="./prototypes/capa-tracker.html">
+          Launch Prototype →
+        </a>
+      </div>
+
+
+      <div class="card">
+        <h3>Safety Dashboard</h3>
+
+        <p>
+          Demonstrates how connected safety information could support
+          trend analysis, emerging-risk identification, and organizational visibility.
+        </p>
+
+        <a href="./prototypes/safety-dashboard.html">
+          Launch Prototype →
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<section>
+  <div class="container">
+
+    <h2>Role of AI</h2>
+
+    <p class="intro">
+      SIR treats AI as a supporting capability rather than a decision-maker.
+      Potential applications include information normalization, relationship
+      discovery, similarity identification, research retrieval, pattern
+      recognition, and drafting assistance.
+    </p>
+
+    <p class="intro">
+      The concept is LLM-agnostic. A production implementation could use
+      an appropriate model based on organizational security, privacy,
+      performance, governance, cost, and deployment requirements.
+    </p>
+
+    <div class="principle">
+      AI can help organize, retrieve, compare, and surface information.
+      Human professionals retain judgment and decision authority.
+    </div>
+
+  </div>
+</section>
+
+
+<div class="disclaimer">
+  <div class="container">
+
+    <strong>Prototype Disclaimer</strong>
+
+    <p>
+      This is an independent conceptual and educational proof of concept.
+      It is not a production safety system and is not affiliated with,
+      endorsed by, sponsored by, or representative of any autonomous
+      vehicle manufacturer, autonomous driving company, regulatory agency,
+      government organization, or other entity.
+    </p>
+
+    <p>
+      Unless specifically identified and cited, incidents, organizations,
+      vehicle information, regulatory references, identifiers, CAPAs,
+      hazards, metrics, failure modes, dates, statistics, dashboards,
+      alerts, and investigation results displayed within these prototypes
+      are fictional, synthetic, illustrative, or placeholder information
+      created solely to demonstrate the concept.
+    </p>
+
+  </div>
+</div>
+
+
+<footer>
+  <div class="container">
+    <strong>Nicholas Soria</strong><br>
+    Operational Systems • Technical Training • Safety-Critical Operations
+  </div>
+</footer>
+
+</body>
+</html>
